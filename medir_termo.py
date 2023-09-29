@@ -64,4 +64,5 @@ try:
 
 except:
     pass
-multi.close()
+multitermo.close()
+multires.close()
