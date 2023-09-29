@@ -9,8 +9,8 @@ plt.style.use('./informes.mplstyle')
 
 rm = visa.ResourceManager()
 
-multitermo = rm.open_resource('GPIB0::23::INSTR')
-multires = rm.open_resource('GPIB0::24::INSTR')
+multitermo = rm.open_resource('GPIB0::23::INSTR')   #M1  CHEQUEAR, PUEDE QUE ESTEN AL REVEZ
+multires = rm.open_resource('GPIB0::24::INSTR')     #M2
 
 try:
 
