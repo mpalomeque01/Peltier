@@ -9,16 +9,16 @@ plt.style.use('./informes.mplstyle')
 
 rm = visa.ResourceManager()
 
-multitermo = rm.open_resource('GPIB0::23::INSTR') #m1  Corregir, puede que esten al revez.
-multires = rm.open_resource('GPIB0::24::INSTR')   #m2
+# multitermo = rm.open_resource('GPIB0::23::INSTR') #m1  Corregir, puede que esten al revez.
+multires = rm.open_resource('GPIB0::22::INSTR')   #m2
 
 fig, ax = plt.subplots()
 
 def animate(i,t,T,t0):
 
-    t.append(time.time()-t0)
-    medicion_V = multitermo.query_ascii_values('MEASURE:VOLTAGE:DC?')[0]
-    medicion_V = medicion_V*1e3
+    t = np.append(time.time()-t0)
+    medicion_V = multires.query_ascii_values('MEASURE:RESistance? 100')[0]
+    # medicion_V = medicion_V*1e3
     medicion_T = v2k(medicion_V) - 273.15
     T = np.append(T,[medicion_T])
     t = t[-200:]  #Para que el plot pueda correr por mucho tiempo
@@ -44,10 +44,9 @@ try:
     ani = animation.FuncAnimation(fig,
                                   animate,
                                   fargs = (t,T,t0),
-                                  interval = 16.6,
-                                  blit = True) #blit puede tirar problemas
+                                  interval = 16.6) #blit puede tirar problemas
     plt.show()
 except:
     pass
-multitermo.close()
+# multitermo.close()
 multires.close()

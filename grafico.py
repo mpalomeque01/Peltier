@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from labo import v2k
 plt.style.use('./informes.mplstyle')
 
-df = pd.read_csv('./Mediciones/Clase 1/cal_termocupla-t=60.csv')
+df = pd.read_csv('./Mediciones/Clase 1/cal_termocupla-t=60(1).csv')
 t = df['Tiempo [s]'].values
 V = df['Tension [mV]'].values
 # T = df['Temperatura [K]'].values - 273.15

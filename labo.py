@@ -1,18 +1,6 @@
 import numpy as np
 from os.path import exists
-
-def save(df, filename=None, path='.'):
-    if exists(f'{path}/{filename}.csv'):
-        i = 1
-        while True:
-            if exists(f'{path}/{filename}({i}).csv'):
-                i += 1
-                continue
-            else:
-                df.to_csv(f'{path}/{filename}({i}).csv')
-                break
-    else:
-        df.to_csv(f'{path}/{filename}.csv')
+from metodos import save
 
 #Error de medicion para resistencia Multimetro 34401A
 #Usando 90 Day +- 5 deg(C)
@@ -75,28 +63,3 @@ def v2k(mV): # en mV
     T = C0 + C1*mV + C2*mV**2 + C3*mV**3 + C4*mV**4 + C5*mV**5 + C6*mV**6 + C7*mV**7 +  C8*mV**8 + C9*mV**9        
     
     return T * (mV < 20.644)  # K
-
-
-
-# ESTADISTICA
-
-def lineal(x, a1, a2):
-    return a1 + a2*x
-
-def correlacion(x, y):
-    x_med = np.mean(x)
-    y_med = np.mean(y)
-
-    cov = np.sum((x - x_med) * (y - y_med))
-    stds = np.sum((x - x_med)**2) * np.sum((y - y_med)**2)
-    return cov / np.sqrt(stds)
-
-def cuadrados_minimos(x, y, sigma):
-    n = len(x)
-    Delta = n*np.sum(x**2) - np.sum(x)**2
-
-    a1 = (np.sum(x**2)*np.sum(y) - np.sum(x)*np.sum(x*y)) / Delta
-    a2 = (n*np.sum(x*y) - np.sum(x)*np.sum(y)) / Delta
-    cov = ((sigma**2)/Delta)*np.array([[np.sum(x**2), -np.sum(x)], [-np.sum(x), n]])
-
-    return np.array([a1, a2]), cov
