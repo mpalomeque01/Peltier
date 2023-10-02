@@ -11,7 +11,6 @@ rm = visa.ResourceManager()
 
 multi_up = rm.open_resource('GPIB0::22::INSTR')
 multi_down = rm.open_resource('GPIB0::23::INSTR')
-gen = rm.open_resource('GPIB0::25::INSTR')
 
 
 try:
@@ -21,14 +20,13 @@ try:
     t = []  # s
     V = []  # V
     R = []  # Ohm
-    duracion = 10  # s
-    T_amb = 20  # °C
+    duracion = 20  # s
     
     t0 = time.time()
     while time.time() - t0 <= duracion:
         t.append(time.time() - t0)
-        medicion_V = multi_down.query_ascii_values('MEASURE:VOLT:DC?')[0]
-        medicion_R = multi_up.query_ascii_values('MEASURE:RESistance? 100')[0]
+        medicion_V = multi_up.query_ascii_values('MEASURE:VOLT:DC?')[0]
+        medicion_R = multi_down.query_ascii_values('MEASURE:RESistance? 1000')[0]
         V.append(medicion_V)
         R.append(medicion_R)
     
@@ -42,7 +40,6 @@ try:
     df = pd.DataFrame({'Tiempo [s]' : t,
                         'Tension [mV]' : V,
                         'Resistencia [Ohm]' : R})
-    df['Temp ambiente [K]'] = pd.Series([T_amb], index=[0])
     
     met.save(df, f'cal_termocupla2_t{duracion}', './Mediciones/Clase 2')
     
@@ -55,13 +52,13 @@ try:
     ax[1].set_xlabel('Tiempo [s]')
     
     ax[0].plot(t, V)
-    ax[1].plot(t, R*met.cal_pt100, 'C3')
-    
-    plt.show()
+    ax[1].plot(t, met.R2C(R), 'C1')
     
     
 except:
     pass
 multi_up.close()
 multi_down.close()
-gen.close()
+
+
+plt.show()

@@ -5,7 +5,7 @@ import time
 import metodos as met
 
 rm = visa.ResourceManager()
-multi_up = rm.open_resource('GPIB0::22::INSTR')
+multi_down = rm.open_resource('GPIB0::23::INSTR')
 
 try:
     
@@ -17,7 +17,7 @@ try:
     t0 = time.time()
     while time.time() - t0 <= duracion:
         t.append(time.time() - t0)
-        R.append(multi_up.query_ascii_values('MEASURE:RESistance? 100')[0])
+        R.append(multi_down.query_ascii_values('MEASURE:RESistance? 100')[0])
     
     t = np.array(t)  # s
     R = np.array(R)  # Ohm
@@ -30,4 +30,4 @@ try:
     
 except:
     pass
-multi_up.close()
+multi_down.close()
