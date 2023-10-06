@@ -2,6 +2,8 @@ import numpy as np
 from scipy.stats import chi2
 import sympy as sp
 from os.path import exists
+from inspect import getsource
+from types import FunctionType
 
 def save(df, filename, path='.'):
     if exists(f'{path}/{filename}.csv'):
@@ -41,11 +43,23 @@ def least_squares(f, x, y, sigma):
     parametros = f.__code__.co_varnames[1:k+1]
     
     
-    if len(np.array(sigma).shape) == 1:
-        sigma = np.identity(len(x))*np.array(sigma)
+    # Conversion a array y definicion matriz sigma
+    x = np.array(x)
+    y = np.array([np.array(y)]).T
+    sigma = np.array(sigma)
+    if len(sigma.shape) == 1:
+        sigma = np.identity(n)*sigma
+    
+    
+    # Correccion de la funcion a sympy
+    if 'np.' in getsource(f):
+        f_code = compile(getsource(f).replace('np.', 'sp.'), '', 'exec')
+        f = FunctionType(f_code.co_consts[0], globals(), "gfg")
     
     f = f(sp.symbols('x'), *sp.symbols(parametros))
     
+    
+    # Definicion de la matriz A
     A = []
     for parametro in sp.symbols(parametros):
         fprima_i = sp.diff(f, parametro).simplify()
@@ -53,12 +67,13 @@ def least_squares(f, x, y, sigma):
             fprima_i = sp.lambdify('x', fprima_i)
             A.append(fprima_i(x))
         else:
-            fprima_i = float(fprima_i)
-            A.append(np.array(n*[fprima_i]))
+            fprima_i = n*[float(fprima_i)]
+            A.append(np.array(fprima_i))
     
     A = np.array(A).T
     
-    y = np.array([y]).T
+    
+    # Resultados
     pcov = np.linalg.inv(A.T @ np.linalg.inv(sigma) @ A)
     popt = pcov @ A.T @ np.linalg.inv(sigma) @ y
     
