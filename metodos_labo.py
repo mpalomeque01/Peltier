@@ -25,14 +25,6 @@ cal_pt100 = 1 / 0.385  # K/Ohm
 
 R2C = lambda R: (R - 100)*cal_pt100
 
-# incerteza lectura-rango resistencia
-reading_100Ohm  =   0.00008
-range_100Ohm    =   0.00004
-range_1kOhm     =   0.00001
-# Incerteza lectura-rango tension
-reading_1V      =   0.00003
-range_1V        =   0.000007
-
 
 # ESTADISTICA
 
@@ -81,3 +73,14 @@ def least_squares(f, x, y, sigma):
     P = 1 - chi2.cdf(chi_sq[0,0], n-k)
     
     return popt.T[0], pcov, P
+
+
+def weighted(X, sigma):
+    
+    X = np.array(X)
+    sigma = np.array(sigma)
+    
+    X_bar = np.sum(X / sigma**2) / np.sum(1 / sigma**2)
+    sigma_X_bar = 1 / np.sum(1 / sigma**2)
+    
+    return X_bar, np.sqrt(sigma_X_bar)
