@@ -90,4 +90,4 @@ def quadsum(*args):
     
     args = np.array(args)
     
-    return np.sum(np.sqrt(args**2))
+    return np.sqrt(np.sum(args**2))
