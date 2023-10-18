@@ -89,5 +89,6 @@ def weighted(X, sigma):
 def quadsum(*args):
     
     args = np.array(args)
+    sum_sq = np.sqrt(np.sum(args**2))
     
-    return np.sqrt(np.sum(args**2))
+    return sum_sq
