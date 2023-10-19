@@ -25,13 +25,7 @@ cal_pt100 = 1 / 0.385  # K/Ohm
 
 R2C = lambda R: (R - 100)*cal_pt100
 
-# incerteza lectura-rango resistencia
-reading_100Ohm  =   0.00008
-range_100Ohm    =   0.00004
-range_1kOhm     =   0.00001
-# Incerteza lectura-rango tension
-reading_1V      =   0.00003
-range_1V        =   0.000007
+calibracion_termo = lambda m, b, V: m*V + b
 
 
 # ESTADISTICA
@@ -81,3 +75,54 @@ def least_squares(f, x, y, sigma):
     P = 1 - chi2.cdf(chi_sq[0,0], n-k)
     
     return popt.T[0], pcov, P
+
+
+def weighted(X, sigma):
+    
+    X = np.array(X)
+    sigma = np.array(sigma)
+    
+    X_bar = np.sum(X / sigma**2) / np.sum(1 / sigma**2)
+    sigma_X_bar = 1 / np.sum(1 / sigma**2)
+    
+    return X_bar, np.sqrt(sigma_X_bar)
+
+
+def quadsum(*args):
+    
+    args = np.array(args)
+    sum_sq = np.sqrt(np.sum(args**2))
+    
+    return sum_sq
+
+
+def corr_propagation(f, X, cov):  # correlated propagation
+    
+    n_vars = f.__code__.co_argcount
+    vars = sp.symbols(f.__code__.co_varnames[:n_vars])  # Variables
+    
+    X = np.array(X)
+    cov = np.array(cov)
+    if len(cov.shape) == 1:
+        cov = np.identity(len(X))*cov
+    
+    
+    # Function correction if necessary
+    if 'np.' in getsource(f):
+        f_code = compile(getsource(f).replace('np.', 'sp.'), '', 'exec')
+        f = FunctionType(f_code.co_consts[0], globals(), "gfg")
+    f = f(*vars)
+    
+    
+    uncertainty = 0
+    
+    for i in range(0, n_vars):
+        for j in range(i, n_vars):
+            if i != j:  # Correlated terms
+                fprima_i_j = sp.lambdify(vars, sp.diff(f, vars[i])*sp.diff(f, vars[j]).simplify())
+                uncertainty += 2 * fprima_i_j(*X) * cov[i,j]
+            else:  # Non correlated terms
+                fprima_i_j = sp.lambdify(vars, sp.diff(f, vars[i]).simplify())
+                uncertainty += cov[i,i] * fprima_i_j(*X)**2
+    
+    return np.sqrt(uncertainty)
