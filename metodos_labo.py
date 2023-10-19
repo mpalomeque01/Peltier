@@ -25,6 +25,8 @@ cal_pt100 = 1 / 0.385  # K/Ohm
 
 R2C = lambda R: (R - 100)*cal_pt100
 
+calibracion_termo = lambda m, b, V: m*V + b
+
 
 # ESTADISTICA
 
@@ -92,3 +94,35 @@ def quadsum(*args):
     sum_sq = np.sqrt(np.sum(args**2))
     
     return sum_sq
+
+
+def corr_propagation(f, X, cov):  # correlated propagation
+    
+    n_vars = f.__code__.co_argcount
+    vars = sp.symbols(f.__code__.co_varnames[:n_vars])  # Variables
+    
+    X = np.array(X)
+    cov = np.array(cov)
+    if len(cov.shape) == 1:
+        cov = np.identity(len(X))*cov
+    
+    
+    # Function correction if necessary
+    if 'np.' in getsource(f):
+        f_code = compile(getsource(f).replace('np.', 'sp.'), '', 'exec')
+        f = FunctionType(f_code.co_consts[0], globals(), "gfg")
+    f = f(*vars)
+    
+    
+    uncertainty = 0
+    
+    for i in range(0, n_vars):
+        for j in range(i, n_vars):
+            if i != j:  # Correlated terms
+                fprima_i_j = sp.lambdify(vars, sp.diff(f, vars[i])*sp.diff(f, vars[j]).simplify())
+                uncertainty += 2 * fprima_i_j(*X) * cov[i,j]
+            else:  # Non correlated terms
+                fprima_i_j = sp.lambdify(vars, sp.diff(f, vars[i]).simplify())
+                uncertainty += cov[i,i] * fprima_i_j(*X)**2
+    
+    return np.sqrt(uncertainty)
